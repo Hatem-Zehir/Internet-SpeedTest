@@ -16,10 +16,10 @@ pip install speedtest sqlite3
 # Database
 The script creates a SQLite database named SpeedTest.db in the project directory, if it does not exist already. It creates a table named Speed with the following columns:
 
-- Date (text)
-- Time (text)
-- Download (real)
-- Upload (real)
-- Ping (integer)
+- Date
+- Time
+- Download
+- Upload
+- Ping
 
 The script inserts a new row into the Speed table each time it is run, with the current date and time, download speed, upload speed, and ping time.
