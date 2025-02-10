@@ -14,6 +14,7 @@ Ensure you have the required dependencies installed:
 
 ```sh
 pip install speedtest-cli
+```
 
 ## **Database Details**  
 The script creates a **SQLite database** named `SpeedTest.db` in the project directory (if it doesn’t already exist).  
@@ -34,3 +35,4 @@ Each test run **inserts a new row** into the `Speed` table, storing:
 Run the script using:  
 ```sh
 python speedtest_script.py
+```
