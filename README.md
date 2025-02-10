@@ -1,25 +1,36 @@
-# Internet-SpeedTest
+# **Internet-SpeedTest**  
+🚀 A Python script to measure internet speed using the Speedtest.net API and store results in an SQLite database.  
 
-This Python script measures the speed of your internet connection using the Speedtest.net API and saves the results in a SQLite database. The script uses the speedtest and sqlite3 libraries to perform the test and store the data, respectively.
+## **License**  
+This project is licensed under the **GPL-3.0 License**.  
 
-# Prerequisites
-To run this project, you must have the following libraries installed:
-- speedtest
-- sqlite3
+## **Overview**  
+This script tests your internet speed and logs the results for future reference. It utilizes:  
+- **speedtest** for measuring download, upload, and ping speeds.  
+- **sqlite3** for storing test results in a local database.  
 
-You can install them by running the following command in your terminal:
+## **Prerequisites**  
+Ensure you have the required dependencies installed:  
 
-```
-pip install speedtest-cli sqlite3
-```
+```sh
+pip install speedtest-cli
 
-# Database
-The script creates a SQLite database named SpeedTest.db in the project directory, if it does not exist already. It creates a table named Speed with the following columns:
+## **Database Details**  
+The script creates a **SQLite database** named `SpeedTest.db` in the project directory (if it doesn’t already exist).  
 
-- Date
-- Time
-- Download
-- Upload
-- Ping
+### **Table Structure (Speed Table)**  
+| Column   | Data Type |
+|----------|-----------|
+| Date     | TEXT      |
+| Time     | TEXT      |
+| Download | REAL      |
+| Upload   | REAL      |
+| Ping     | INTEGER   |
 
-The script inserts a new row into the Speed table each time it is run, with the current date and time, download speed, upload speed, and ping time.
+Each test run **inserts a new row** into the `Speed` table, storing:  
+📅 **Date** | ⏰ **Time** | 📥 **Download Speed (Mbps)** | 📤 **Upload Speed (Mbps)** | 📶 **Ping (ms)**  
+
+## **Usage**  
+Run the script using:  
+```sh
+python speedtest_script.py
