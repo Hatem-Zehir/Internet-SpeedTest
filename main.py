@@ -2,31 +2,79 @@ import sqlite3
 import speedtest
 from datetime import datetime
 
-db = sqlite3.connect("SpeedTest.db")
-db.row_factory = sqlite3.Row
-db.execute("create table if not exists Speed(Date text, Time text, Download real, Upload real, Ping integer)")
 
-servers = []
-threads = None
-s = speedtest.Speedtest()
-s.get_servers(servers)
-s.get_best_server()
-s.download(threads=threads)
-s.upload(threads=threads)
-s.results.share()
-results_dict = s.results.dict()
+def run_speed_test():
+    """
+    Run the speed test and return download/upload speeds in Mbps and ping in ms.
+    
+    Returns:
+        tuple: (download_mbps (float), upload_mbps (float), ping (int))
+    """
+    try:
+        s = speedtest.Speedtest()
+        # Optionally, you can retrieve servers if you want to filter them:
+        # s.get_servers([])
+        s.get_best_server()
+        s.download()
+        s.upload()
+        s.results.share()
+        results = s.results.dict()
 
-DL = round(results_dict['download']/(1024*1024), 2)
-UP = round(results_dict['upload']/(1024*1024), 2)
-ping = round(results_dict['ping'], 0)
+        download_mbps = round(results['download'] / (1024 * 1024), 2)
+        upload_mbps = round(results['upload'] / (1024 * 1024), 2)
+        ping = round(results['ping'], 0)
 
-now = datetime.now()
-dtString = now.strftime("%d %B %Y")
-time = now.strftime("%H:%M")
-db.execute("insert into Speed(Date, Time, Download, Upload, Ping) values (? , ? , ?, ?, ?)",(dtString, time, DL, UP, ping))
-db.commit()
+        return download_mbps, upload_mbps, ping
+
+    except Exception as e:
+        print(f"An error occurred during the speed test: {e}")
+        return None, None, None
+
+
+def store_results(download, upload, ping, db_path="SpeedTest.db"):
+    """
+    Store the speed test results in a SQLite database.
+    
+    Args:
+        download (float): Download speed in Mbps.
+        upload (float): Upload speed in Mbps.
+        ping (int): Ping in ms.
+        db_path (str): Path to the SQLite database file.
+    """
+    now = datetime.now()
+    date_str = now.strftime("%d %B %Y")
+    time_str = now.strftime("%H:%M")
+
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS Speed (
+        Date TEXT,
+        Time TEXT,
+        Download REAL,
+        Upload REAL,
+        Ping INTEGER
+    )
+    """
+    insert_query = "INSERT INTO Speed (Date, Time, Download, Upload, Ping) VALUES (?, ?, ?, ?, ?)"
+
+    try:
+        with sqlite3.connect(db_path) as conn:
+            conn.execute(create_table_query)
+            conn.execute(insert_query, (date_str, time_str, download, upload, ping))
+            conn.commit()
+    except sqlite3.Error as e:
+        print(f"An error occurred while storing results in the database: {e}")
+
+
+def main():
+    download, upload, ping = run_speed_test()
+    if download is not None:
+        store_results(download, upload, ping)
+        print(f"Download: {download} Mbps")
+        print(f"Upload: {upload} Mbps")
+        print(f"Ping: {ping} ms")
+    else:
+        print("Speed test failed. Results not stored.")
+
 
 if __name__ == "__main__":
-    print('Download: ', DL, 'Mbps')
-    print('Upload: ', UP, 'Mbps')
-    print('Ping: ', ping, 'ms')
+    main()
