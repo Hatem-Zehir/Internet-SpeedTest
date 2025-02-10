@@ -10,7 +10,7 @@ To run this project, you must have the following libraries installed:
 You can install them by running the following command in your terminal:
 
 ```
-pip install speedtest sqlite3
+pip install speedtest-cli sqlite3
 ```
 
 # Database
