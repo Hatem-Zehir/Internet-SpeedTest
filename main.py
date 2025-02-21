@@ -1,6 +1,7 @@
 import sqlite3
 import speedtest
 from datetime import datetime
+import os
 
 
 def run_speed_test():
@@ -12,22 +13,19 @@ def run_speed_test():
     """
     try:
         s = speedtest.Speedtest()
-        # Optionally, you can retrieve servers if you want to filter them:
-        # s.get_servers([])
         s.get_best_server()
         s.download()
         s.upload()
-        s.results.share()
         results = s.results.dict()
 
         download_mbps = round(results['download'] / (1024 * 1024), 2)
         upload_mbps = round(results['upload'] / (1024 * 1024), 2)
-        ping = round(results['ping'], 0)
+        ping = round(results['ping'])
 
         return download_mbps, upload_mbps, ping
 
     except Exception as e:
-        print(f"An error occurred during the speed test: {e}")
+        print(f"Speed test error: {e}")
         return None, None, None
 
 
@@ -41,37 +39,42 @@ def store_results(download, upload, ping, db_path="SpeedTest.db"):
         ping (int): Ping in ms.
         db_path (str): Path to the SQLite database file.
     """
-    now = datetime.now()
-    date_str = now.strftime("%d %B %Y")
-    time_str = now.strftime("%H:%M")
+    timestamp = datetime.now().isoformat(sep=" ", timespec="seconds")
+
+    # Ensure database directory exists
+    db_dir = os.path.dirname(db_path)
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
 
     create_table_query = """
-    CREATE TABLE IF NOT EXISTS Speed (
-        Date TEXT,
-        Time TEXT,
-        Download REAL,
-        Upload REAL,
-        Ping INTEGER
+    CREATE TABLE IF NOT EXISTS SpeedTestResults (
+        timestamp TEXT PRIMARY KEY,
+        download REAL,
+        upload REAL,
+        ping INTEGER
     )
     """
-    insert_query = "INSERT INTO Speed (Date, Time, Download, Upload, Ping) VALUES (?, ?, ?, ?, ?)"
+    insert_query = """
+    INSERT INTO SpeedTestResults (timestamp, download, upload, ping)
+    VALUES (?, ?, ?, ?)
+    """
 
     try:
         with sqlite3.connect(db_path) as conn:
             conn.execute(create_table_query)
-            conn.execute(insert_query, (date_str, time_str, download, upload, ping))
+            conn.execute(insert_query, (timestamp, download, upload, ping))
             conn.commit()
     except sqlite3.Error as e:
-        print(f"An error occurred while storing results in the database: {e}")
+        print(f"Database error: {e}")
 
 
 def main():
-    download, upload, ping = run_speed_test()
-    if download is not None:
+    print("Running speed test...")
+    results = run_speed_test()
+    if results != (None, None, None):
+        download, upload, ping = results
         store_results(download, upload, ping)
-        print(f"Download: {download} Mbps")
-        print(f"Upload: {upload} Mbps")
-        print(f"Ping: {ping} ms")
+        print(f"Results:\nDownload: {download} Mbps\nUpload: {upload} Mbps\nPing: {ping} ms")
     else:
         print("Speed test failed. Results not stored.")
 
