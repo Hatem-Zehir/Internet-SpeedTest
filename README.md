@@ -22,8 +22,7 @@ The script creates a **SQLite database** named `SpeedTest.db` in the project dir
 ### **Table Structure (Speed Table)**  
 | Column   | Data Type |
 |----------|-----------|
-| Date     | TEXT      |
-| Time     | TEXT      |
+| Date & Time    | TEXT      |
 | Download | REAL      |
 | Upload   | REAL      |
 | Ping     | INTEGER   |
